@@ -13,7 +13,7 @@ dir=$1
 
 mkdir -p $dir
 
-for i in 10 20 30 40 50 60 ; do
+for i in 10 20 30 40 50 ; do
   txt=pt_part_$i.txt
   [ ! -f $dir/$txt.gz ] && \
     { wget --header "Cookie: $SHA" $BASE_URL/$txt.gz -P $dir || exit 1 ; } || \

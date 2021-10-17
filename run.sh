@@ -15,7 +15,7 @@
 function msg { echo -e "\e[$(shuf -i 92-96 -n 1)m[$(date +'%F %T')] $1\e[0m" ; }
 
 stage=0
-ns=75000000  # number of sentences supported on a 32 GB RAM machine. empirical
+ns=70000000  # number of sentences supported on a 32 GB RAM machine. empirical
 data=./data
 
 # https://stackoverflow.com/questions/402377/using-getopts-to-process-long-and-short-command-line-options
@@ -34,16 +34,16 @@ if [ $stage -le 0 ] ; then
 fi
 
 if [ $stage -le 1 ] ; then
-  msg "$0: fetching oscar data (six parts only)"
+  msg "$0: fetching oscar data (five parts only)"
   /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
     local/fetch_data.sh $data/raw || exit 1
 fi
 
 if [ $stage -le 2 ] ; then
-  msg "$0: normalising data using six parallel jobs in background"
+  msg "$0: normalising data using five parallel jobs in background"
   mkdir -p $data/{log,norm}
   rm -f .err
-  for i in 10 20 30 40 50 60 ; do
+  for i in 10 20 30 40 50 ; do
     ( /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
         local/norm_oscar.py \
           --log-file $data/log/pt_part_$i.log \
@@ -58,7 +58,7 @@ if [ $stage -le 2 ] ; then
     cat $data/norm/*.out | shuf | head -n $ns > $data/corpus.txt
 fi
 
-# FIXME stages 3 to 5 could be optimized by piping the former command's stdout
+# TODO stages 3 to 5 could be optimized by piping the former command's stdout
 # to the next stdin's, therefore avoiding writing to disk.
 #       r: file w:stdout            r:stdin w:stdout  r: file, stdin w:file
 # e.g.: count_words.py corpus.txt | create_vocab.py | srilm_train.sh corpus.txt lmdir
@@ -84,12 +84,12 @@ fi
 
 if [ $stage -le 6 ] ; then
   msg "$0: building phonetic dictionary for vocab file (lexicon)"
-  mkdir -p $data/log
-  /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
-    cat $data/vocab.txt | \
-      docker run --rm -i falabrasil/g2p 2> $data/log/g2p.log | \
-      gzip -c > $data/lm/lexicon.txt.gz
-  echo "$0: success! file '$data/lm/lexicon.txt.gz' saved."
+  echo >&2 "WARNING: this will use as many threads as there are CPU cores"
+  mkdir -p $data/{log,dict}
+  cat $data/vocab.txt | \
+    docker run --rm -i falabrasil/g2p 2> $data/log/g2p.log | \
+    gzip -c > $data/dict/lexicon.txt.gz
+  echo "$0: success! file '$data/dict/lexicon.txt.gz' saved."
 fi
 
 msg "$0: success!"

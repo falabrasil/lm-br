@@ -56,4 +56,4 @@ if __name__ == "__main__":
     with open(args.vocab_file, "w") as f:
         for i, word in enumerate(sorted(vocab, key=collator.getSortKey)):
             f.write("%s\n" % word)
-        logger.info("done! vocabulary contains %d words" % (i + 1))
+        logging.info("done! vocabulary contains %d words" % (i + 1))
