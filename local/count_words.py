@@ -13,7 +13,9 @@ import logging
 from tqdm import tqdm
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+        format='[%(asctime)s] [%(module)s] %(levelname)-8s %(message)s',
+        level=logging.INFO)
 
 parser = argparse.ArgumentParser(
         description="builds a frequency list of words from a corpus")

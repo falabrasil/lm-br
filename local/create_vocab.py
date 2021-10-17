@@ -14,7 +14,9 @@ import logging
 import aspell
 import icu
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+        format='[%(asctime)s] [%(module)s] %(levelname)-8s %(message)s',
+        level=logging.INFO)
 
 parser = argparse.ArgumentParser(
         description="filter frequency list with GNU Aspell")
@@ -41,18 +43,17 @@ if __name__ == "__main__":
             count[word] = int(freq)
 
     logging.info("filtering")
-    n = 0
     vocab = []
     for word, freq in count.items():
         if spell.check(word) or freq > args.min_freq:
             vocab.append(word)
-            n += 1
         else:
-            logging.debug("mispell: %s (%d)" % (word, freq))
-        if n >= args.size:
+            logging.debug("misspell: %s (%d)" % (word, freq))
+        if len(vocab) >= args.size:
             break
 
     logging.info("writing to file: %s" % args.vocab_file)
     with open(args.vocab_file, "w") as f:
-        for word in sorted(vocab, key=collator.getSortKey):
+        for i, word in enumerate(sorted(vocab, key=collator.getSortKey)):
             f.write("%s\n" % word)
+        logger.info("done! vocabulary contains %d words" % (i + 1))
