@@ -1,0 +1,4 @@
+aspell-python-py3
+num2words
+pyicu
+tqdm
