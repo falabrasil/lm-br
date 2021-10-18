@@ -12,6 +12,9 @@
 # cassio batista - https://cassota.gitlab.io
 
 
+# path to common voice dataset in portuguese
+CV_PATH=$HOME/common_voice/cv-corpus-7.0-2021-07-21/pt
+
 function msg { echo -e "\e[$(shuf -i 92-96 -n 1)m[$(date +'%F %T')] $1\e[0m" ; }
 
 stage=0
@@ -90,6 +93,24 @@ if [ $stage -le 6 ] ; then
     docker run --rm -i falabrasil/g2p 2> $data/log/g2p.log | \
     gzip -c > $data/dict/lexicon.txt.gz
   echo "$0: success! file '$data/dict/lexicon.txt.gz' saved."
+fi
+
+if [ $stage -le 7 ] ; then
+  msg "$0: evaluating language models"
+  if [ ! -d $CV_PATH ] ; then
+    echo "$0: error: common voice portuguese dataset not found under '$CV_PATH'"
+    echo "$0: skipping lm evaluation..."
+  else
+    cut -d$'\t' -f 3 $CV_PATH/test.tsv | \
+      sed 's/["?!,\.]//g' | awk '{print tolower($0)}' > $data/cv_test.txt
+    echo "èæovç øütro ïss nõeaxì òlkjh" >> $data/cv_test.txt
+    /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
+      ngram -memuse -lm $data/lm/3-gram.*.arpa.gz \
+        -order 3 -unk -ppl $data/cv_test.txt
+    /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
+      ngram -memuse -lm $data/lm/4-gram.arpa.gz \
+        -order 4 -unk -ppl $data/cv_test.txt
+  fi
 fi
 
 msg "$0: success!"
