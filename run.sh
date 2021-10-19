@@ -101,9 +101,8 @@ if [ $stage -le 7 ] ; then
     echo "$0: error: common voice portuguese dataset not found under '$CV_PATH'"
     echo "$0: skipping lm evaluation..."
   else
-    cut -d$'\t' -f 3 $CV_PATH/test.tsv | \
-      sed 's/["?!,\.]//g' | awk '{print tolower($0)}' > $data/cv_test.txt
-    echo "èæovç øütro ïss nõeaxì òlkjh" >> $data/cv_test.txt
+    cut -f 3 $CV_PATH/test.tsv | sed 's/['\''«»"”?!,;:\.]//g' | \
+      awk '{print tolower($0)}' | tail -n +2 > $data/cv_test.txt
     /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
       ngram -memuse -lm $data/lm/3-gram.*.arpa.gz \
         -order 3 -unk -ppl $data/cv_test.txt
