@@ -43,7 +43,8 @@ $ docker run --rm -it falabrasil/lm-br:latest bash
 $ ngram -version
 ```
 
-The output should be as follows:
+<details><summary>The output should be as follows:</summary>
+<p>
 
 ```text
 SRILM release 1.7.3 (with third-party contributions)
@@ -79,6 +80,9 @@ If this software was obtained under a commercial license agreement with
 SRI then the provisions therein govern the use of the software and the
 above notice does not apply.
 ```
+
+</p>
+</details>
 
 
 ## Notes :memo:
