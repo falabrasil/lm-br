@@ -43,7 +43,7 @@ echo "[$(date)] $0: training 4-gram"
 # pruned trigram LM for 1st pass decoding
 # unpruned version may be too big for reasonable decode time,
 # so it has to be pruned for faster decoding
-echo "[$(date)] $0: pruning 4-gram and reduncing order to 3"
+echo "[$(date)] $0: pruning 4-gram and reducing order to 3"
 /usr/bin/time -f "3-gram estimation took %E (%U secs)\tRAM: %M KB" \
     ngram \
         -memuse \

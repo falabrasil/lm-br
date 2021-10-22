@@ -9,6 +9,7 @@
 import sys
 import argparse
 import logging
+import gzip
 
 from tqdm import tqdm
 
@@ -33,8 +34,8 @@ if __name__ == "__main__":
     # NOTE this splits the file on linebreaks instead of all whitespaces
     # because segmenting at the word level takes a TON more RAM
     logging.info("loading file (all at once into RAM): %s" % args.corpus_file)
-    with open(args.corpus_file) as f:
-        corpus = f.read().split("\n")
+    with gzip.open(args.corpus_file, "rb") as f:
+        corpus = f.read().decode().split("\n")
 
     logging.info("counting")
     count = {}
@@ -46,9 +47,9 @@ if __name__ == "__main__":
                 count[word] = 1
 
     logging.info("writing file: %s" % args.word_freq_file)
-    with open(args.word_freq_file, "w") as f:
+    with gzip.open(args.word_freq_file, "wb") as f:
         for i, (word, freq) in enumerate(
                 sorted(count.items(), key=lambda x: x[1], reverse=True)
             ):
-            f.write("%s\t%d\n" % (word, freq))
+            f.write(b"%s\t%s\n" % (word.encode(), str(freq).encode()))
         logging.info("done! frequency list contains %d words" % (i + 1))

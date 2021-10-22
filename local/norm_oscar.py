@@ -19,7 +19,9 @@ import logging
 import argparse
 import calendar
 import locale
+import gzip
 
+from tqdm import tqdm
 from num2words import num2words
 
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
@@ -45,8 +47,11 @@ COMMON_MAPS = {
     r"dr[a|ª]\s": "doutora ",
     r"ám": "am",
     r"ón": "ôn",
-    r"sector": "setor",
+    r"én([aeiou])": "ên\g<1>",
+    r"ém([aeiou])": "êm\g<1>",
     r"acç": "aç",  # acções (pt_EU)
+    r"éi": "ei",
+    r"sector": "setor",
     r"^á$": "à",
     r"n\.?[°º]": "número ",
     r"(\d+).?[°º]": "\g<1>º",
@@ -325,31 +330,31 @@ def normalize(old_sent):
 
 if __name__ == "__main__":
 
-    with open(args.corpus_in_file) as f:
-        corpus = f.readlines()
+    with gzip.open(args.corpus_in_file, "rb") as f:
+        corpus = f.read().decode().split("\n")
 
-    f = open(args.corpus_out_file, "w")
-    for i, line in enumerate(corpus):
-        line = line.strip()
-        logger.info("⁋ %s" % line)
-        for sent in re.split(r"[.!?…;:|]+(\s|$)", line):
-            for k, v in UF_BR.items():
-                sent = re.sub(k, v, sent)
-            sent = re.sub(r"\$\s", "$", sent).lower()
-            for k, v in COMMON_MAPS.items():
-                sent = re.sub(k, v, sent)
-            sent = sent.strip()
-            if sent:
-                logger.debug("« %s" % sent)
-                if len(sent) > MAX_SENT_LEN:
-                    logger.debug("! sentence overflow !")
-                    continue
-                sent = normalize(sent)
-                if sent and re.match(r"^[a-zàáéíóúâêôãõç \-]+$", sent):
-                    logger.debug("» %s" % sent)
-                    f.write(sent + "\n")
-                else:
-                    if sent:
-                        logger.debug("» ! bad sentence ! %s" % sent)
+    with gzip.open(args.corpus_out_file, "wb") as f:
+        for line in tqdm(corpus, unit_scale=True, unit_divisor=1000):
+            line = line.strip()
+            logger.info("⁋ %s" % line)
+            for sent in re.split(r"[.!?…;:|]+(\s|$)", line):
+                for k, v in UF_BR.items():
+                    sent = re.sub(k, v, sent)
+                sent = re.sub(r"\$\s", "$", sent).lower()
+                for k, v in COMMON_MAPS.items():
+                    sent = re.sub(k, v, sent)
+                sent = sent.strip()
+                if sent:
+                    logger.debug("« %s" % sent)
+                    if len(sent) > MAX_SENT_LEN:
+                        logger.debug("! sentence overflow !")
+                        continue
+                    sent = normalize(sent)
+                    if sent and re.match(r"^[a-zàáéíóúâêôãõç \-]+$", sent):
+                        logger.debug("» %s" % sent)
+                        f.write(b"%s\n" % sent.encode())
+                    else:
+                        if sent:
+                            logger.debug("» ! bad sentence ! %s" % sent)
         logger.debug("--")
     f.close()

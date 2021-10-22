@@ -50,15 +50,16 @@ if [ $stage -le 2 ] ; then
     ( /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
         local/norm_oscar.py \
           --log-file $data/log/pt_part_$i.log \
-          $data/raw/pt_part_$i.txt \
-          $data/norm/pt_part_$i.out || touch .err )&
+          $data/raw/pt_part_$i.txt.gz \
+          $data/norm/pt_part_$i.txt.gz || touch .err )&
   done
   wait
   [ -f .err ] && rm -f .err && \
     echo "$0: error during text normalisation" && exit 1
   msg "$0: shuffling and merging normalised files"
   /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
-    cat $data/norm/*.out | shuf | head -n $ns > $data/corpus.txt
+    gunzip -kc $data/norm/*.txt.gz | \
+      shuf | head -n $ns | gzip -c > $data/corpus.txt.gz
 fi
 
 # TODO stages 3 to 5 could be optimized by piping the former command's stdout
@@ -69,27 +70,27 @@ fi
 if [ $stage -le 3 ] ; then
   msg "$0: counting words to create a frequency list"
   /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
-    local/count_words.py $data/corpus.txt $data/count.txt || exit 1
+    local/count_words.py $data/corpus.txt.gz $data/count.txt.gz || exit 1
 fi
 
 if [ $stage -le 4 ] ; then
   msg "$0: creating vocabulary of top-N most frequent words"
   /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
-    local/create_vocab.py $data/count.txt $data/vocab.txt || exit 1
+    local/create_vocab.py $data/count.txt.gz $data/vocab.txt.gz 2> $data/log/vocab.log || exit 1
 fi
 
 # no need to use time profiler here as the script already does it
 if [ $stage -le 5 ] ; then
   msg "$0: training n-gram language models with SRILM"
   echo >&2 "WARNING: this consumes *a lot* of RAM"
-  local/srilm_train.sh $data/corpus.txt $data/vocab.txt $data/lm || exit 1
+  local/srilm_train.sh $data/corpus.txt.gz $data/vocab.txt.gz $data/lm || exit 1
 fi
 
 if [ $stage -le 6 ] ; then
   msg "$0: building phonetic dictionary for vocab file (lexicon)"
   echo >&2 "WARNING: this will use as many threads as there are CPU cores"
   mkdir -p $data/{log,dict}
-  cat $data/vocab.txt | \
+  gunzip -kc $data/vocab.txt.gz | \
     docker run --rm -i falabrasil/g2p 2> $data/log/g2p.log | \
     gzip -c > $data/dict/lexicon.txt.gz
   echo "$0: success! file '$data/dict/lexicon.txt.gz' saved."
