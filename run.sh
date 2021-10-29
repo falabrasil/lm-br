@@ -87,16 +87,6 @@ if [ $stage -le 5 ] ; then
 fi
 
 if [ $stage -le 6 ] ; then
-  msg "$0: building phonetic dictionary for vocab file (lexicon)"
-  echo >&2 "WARNING: this will use as many threads as there are CPU cores"
-  mkdir -p $data/{log,dict}
-  gunzip -kc $data/vocab.txt.gz | \
-    docker run --rm -i falabrasil/g2p 2> $data/log/g2p.log | \
-    gzip -c > $data/dict/lexicon.txt.gz
-  echo "$0: success! file '$data/dict/lexicon.txt.gz' saved."
-fi
-
-if [ $stage -le 7 ] ; then
   msg "$0: evaluating language models"
   if [ ! -d $CV_PATH ] ; then
     echo "$0: error: common voice portuguese dataset not found under '$CV_PATH'"

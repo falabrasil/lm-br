@@ -206,7 +206,7 @@ def parse_number(curr_str_num, next_str_num=""):
     match = re.match(r"^(\d+([.,]\d+)?)%$", curr_str_num)
     if match:
         number = match.groups()[0].replace(",", ".")
-        return "%s porcento" % num2words(number, lang='pt_BR')
+        return "%s por cento" % num2words(number, lang='pt_BR')
     # currency, thousands e.g. (r$|u$|us$|€|£)(\d+)
     match = re.match(r"^(r\$|u\$|us\$|€|£)(\d+(\.\d{3})*)([,.]\d{1,2})?$", curr_str_num)
     if match:

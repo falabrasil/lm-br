@@ -7,13 +7,11 @@ Scripts to train n-gram language models in ARPA format, currently using only
 [SRILM](http://www.speech.sri.com/projects/srilm/). Based on Kaldi scripts
 for LibriSpeech ([local/lm/train_lm.sh](https://github.com/kaldi-asr/kaldi/blob/master/egs/librispeech/s5/local/lm/train_lm.sh)).
 
-It also generates a phonetic dicionary from a pre-specified list of words 
-(top-N most frequent, estimated from OSCAR) using 
-[FalaBrasil's G2P](https://hub.docker.com/r/falabrasil/g2p).
+It also generates a list of top-N most frequent, estimated from OSCAR.
 
 A demonstration is performed over five files of the first version (2019) of the
 [OSCAR corpus](https://oscar-corpus.com/post/oscar-2019/#downloading-oscar).
-Raw data sums up to 9.5 GB while after normalisation clean data is 7.5 GB.
+Raw data sums up to 8.0 GB while after normalisation clean data is 6.25 GB.
 
 
 ## Usage
@@ -30,7 +28,7 @@ $ ./run.sh
 ## Docker :whale:
 
 :warning: We won't be pushing this image to dockerhub because SRILM's license 
-might now allow it. Make sure to download SRILM yourself and place the
+might now allow it (??). Make sure to download SRILM yourself and place the
 `*.tar.gz` file under this repo's dir.
 
 To build the Debian-slim-based image and check for SRILM's version, do the 
@@ -89,7 +87,6 @@ above notice does not apply.
 
 - Beware you'll probably need at least 32 GB of RAM on your machine. Sparing
   some swap space is also advised.
-- You'll also need docker :whale: installed and running for G2P.
 - Evaluation is performed on the Portuguese portion of
   [Mozilla's Common Voice](https://commonvoice.mozilla.org/) dataset.
 - On Debian-based OS, `pkg-config`, `libaspell-dev`, and `libicu-dev` are
