@@ -17,7 +17,7 @@ import unidecode
 import aspell
 import icu
 
-WHITE_LIST = [
+ALLOW_LIST = [
     "à",
     "www",
     "bbb",
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         # aspell validates or frequency is higher to bypass such validation
         # TODO these rules should be added to oscar normaliser right away
         if spell.check(word) or freq > args.min_freq:
-            if word in WHITE_LIST:
+            if word in ALLOW_LIST:
                 vocab.append(word)
                 continue
             # starts or ends with cedilha "ç" or grave-accented a "à"
