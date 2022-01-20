@@ -94,12 +94,10 @@ if [ $stage -le 6 ] ; then
   else
     cut -f 3 $CV_PATH/test.tsv | sed 's/['\''«»"”?!,;:\.]//g' | \
       awk '{print tolower($0)}' | tail -n +2 > $data/cv_test.txt
-    /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
-      ngram -memuse -lm $data/lm/3-gram.*.arpa.gz \
-        -order 3 -unk -ppl $data/cv_test.txt
-    /usr/bin/time -f "Time: %E (%U secs). RAM: %M KB" \
-      ngram -memuse -lm $data/lm/4-gram.arpa.gz \
-        -order 4 -unk -ppl $data/cv_test.txt
+    gunzip -kc $data/lm/3-gram.*.arpa.gz | sed "s/<unk>/<UNK>/g" | \
+      ngram -memuse -lm - -order 3 -unk -ppl $data/cv_test.txt
+    gunzip -kc $data/lm/4-gram.*.arpa.gz | sed "s/<unk>/<UNK>/g" | \
+      ngram -memuse -lm - -order 4 -unk -ppl $data/cv_test.txt
   fi
 fi
 

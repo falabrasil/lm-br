@@ -32,14 +32,12 @@ echo "[$(date)] $0: training 4-gram"
         -kndiscount \
         -interpolate \
         -unk \
-        -map-unk "<UNK>" \
         -limit-vocab \
         -vocab $vocab_file \
         -text $corpus_file \
-        -lm $out_dir/4-gram.arpa.gz || \
+        -lm $out_dir/4-gram.unpruned.arpa.gz || \
           { echo "$0: error building 4-gram lm" && exit 1 ; }
 
-# NOTE: 1e-7 == 0.0000001 ?
 # pruned trigram LM for 1st pass decoding
 # unpruned version may be too big for reasonable decode time,
 # so it has to be pruned for faster decoding
@@ -48,9 +46,12 @@ echo "[$(date)] $0: pruning 4-gram and reducing order to 3"
     ngram \
         -memuse \
         -order 3 \
-        -prune 1e-7 \
+        -prune 2e-7 \
+        -unk \
+        -limit-vocab \
+        -vocab $vocab_file \
         -lm $out_dir/4-gram.arpa.gz \
-        -write-lm $out_dir/3-gram.1e-7.arpa.gz || \
+        -write-lm $out_dir/3-gram.2e-7.arpa.gz || \
           { echo "error pruning 3-gram lm" && exit 1 ; }
 
 echo "[$(date)] $0: done!"
